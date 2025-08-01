@@ -1,0 +1,119 @@
+# Manual Commands to Insert Parameter Values for CHANDRA Spacecraft
+# Use these commands to demonstrate data insertion to your teacher
+
+## Current Status:
+## You have 4 spacecraft in your database:
+## 1. arya (has data)
+## 2. chandra (your second spacecraft - we're adding data for this)
+## 3. Voyager 1 (has data)
+## 4. chandra-11 (has data)
+
+## === COMMAND SET 1: Insert Basic Page Information ===
+
+# Insert Thermal Control System Record
+python -c "import sqlite3; conn = sqlite3.connect('spacecraft.db'); cursor = conn.cursor(); cursor.execute('INSERT OR REPLACE INTO Page_Info (PageID, PageNo, SpacecraftName, SubsystemName, RecordTitle) VALUES (?, ?, ?, ?, ?)', ('CHAN-THM-005', 5, 'chandra', 'thermal', 'Thermal Control System')); conn.commit(); conn.close(); print('✓ Thermal control record inserted')"
+
+# Insert Propulsion System Record
+python -c "import sqlite3; conn = sqlite3.connect('spacecraft.db'); cursor = conn.cursor(); cursor.execute('INSERT OR REPLACE INTO Page_Info (PageID, PageNo, SpacecraftName, SubsystemName, RecordTitle) VALUES (?, ?, ?, ?, ?)', ('CHAN-PROP-006', 6, 'chandra', 'propulsion', 'Propulsion System')); conn.commit(); conn.close(); print('✓ Propulsion record inserted')"
+
+# Insert Data Processing System Record
+python -c "import sqlite3; conn = sqlite3.connect('spacecraft.db'); cursor = conn.cursor(); cursor.execute('INSERT OR REPLACE INTO Page_Info (PageID, PageNo, SpacecraftName, SubsystemName, RecordTitle) VALUES (?, ?, ?, ?, ?)', ('CHAN-DATA-007', 7, 'chandra', 'data_processing', 'Data Processing Unit')); conn.commit(); conn.close(); print('✓ Data processing record inserted')"
+
+## === COMMAND SET 2: Insert Detailed Parameter Values ===
+
+# Insert detailed parameters for Thermal Control System
+python -c "
+import sqlite3
+conn = sqlite3.connect('spacecraft.db')
+cursor = conn.cursor()
+
+# Create column list for Page_Data (first 42 main columns)
+columns = ['PageID', 'Spacecraft Name', 'Mission ID', 'Launch Date', 'Orbit Type', 'Payload Capacity', 'Fuel Capacity', 'Max Thrust', 'Engine Type', 'Communication Band', 'Power Output', 'Solar Array Size', 'Battery Capacity', 'Attitude Control', 'Navigation System', 'Thermal Control', 'Structural Material', 'Dry Mass', 'Wet Mass', 'Dimensions', 'Operational Lifetime', 'Data Rate', 'Onboard Storage', 'Redundancy Level', 'Failure Rate', 'Reliability', 'Radiation Tolerance', 'Temperature Range', 'Software Version', 'Firmware Version', 'Autonomy Level', 'Mission Objectives', 'Scientific Instruments', 'Propulsion System', 'Delta-V Capacity', 'Communication Delay', 'Ground Stations', 'Mission Cost', 'Development Time', 'RecordTitle', 'PageNo', 'SpacecraftName', 'SubsystemName']
+
+# Data for thermal control system
+values = [
+    'CHAN-THM-005',  # PageID
+    'CHANDRA X-Ray Observatory',  # Spacecraft Name
+    'CHAN-001',  # Mission ID
+    '1999-07-23',  # Launch Date
+    'Highly Elliptical Orbit',  # Orbit Type
+    '4800 kg',  # Payload Capacity
+    '1395 kg hydrazine',  # Fuel Capacity
+    '4.45 N',  # Max Thrust
+    'Hydrazine thrusters',  # Engine Type
+    'S-band, Ka-band',  # Communication Band
+    '2.35 kW',  # Power Output
+    '27.4 m²',  # Solar Array Size
+    '40 Ah NiH2',  # Battery Capacity
+    '3-axis stabilized',  # Attitude Control
+    'Star tracker + gyroscopes',  # Navigation System
+    'Passive radiators with heaters',  # Thermal Control
+    'Aluminum honeycomb',  # Structural Material
+    '4200 kg',  # Dry Mass
+    '4790 kg',  # Wet Mass
+    '14.0 x 4.26 x 4.26 m',  # Dimensions
+    '25+ years',  # Operational Lifetime
+    '32 kbps',  # Data Rate
+    '1.2 GB solid state',  # Onboard Storage
+    'Triple redundant',  # Redundancy Level
+    '0.02% per year',  # Failure Rate
+    '99.8%',  # Reliability
+    '20 krad total dose',  # Radiation Tolerance
+    '-150°C to +200°C',  # Temperature Range
+    'V3.2.1',  # Software Version
+    'F2.1.0',  # Firmware Version
+    'Level 3 autonomous',  # Autonomy Level
+    'X-ray astronomy observations',  # Mission Objectives
+    'ACIS, HRC, LETG, HETG',  # Scientific Instruments
+    'Hydrazine monoprop',  # Propulsion System
+    '150 m/s',  # Delta-V Capacity
+    '2-8 seconds',  # Communication Delay
+    'DSN Madrid, Goldstone, Canberra',  # Ground Stations
+    '1.65 billion USD',  # Mission Cost
+    '12 years',  # Development Time
+    'Thermal Control System',  # RecordTitle
+    '5',  # PageNo
+    'chandra',  # SpacecraftName
+    'thermal'  # SubsystemName
+]
+
+# Add 39 empty parameter fields to match table structure
+values.extend([''] * 39)
+
+# Create the INSERT statement
+placeholders = ', '.join(['?' for _ in values])
+insert_sql = f'INSERT OR REPLACE INTO Page_Data VALUES ({placeholders})'
+
+cursor.execute(insert_sql, values)
+conn.commit()
+conn.close()
+print('✓ Detailed thermal control parameters inserted')
+"
+
+## === COMMAND SET 3: Verification Commands ===
+
+# Show all CHANDRA spacecraft records
+python -c "import sqlite3; conn = sqlite3.connect('spacecraft.db'); cursor = conn.cursor(); cursor.execute('SELECT PageID, PageNo, SpacecraftName, SubsystemName, RecordTitle FROM Page_Info WHERE SpacecraftName = ?', ('chandra',)); records = cursor.fetchall(); print('=== CHANDRA Spacecraft Records ==='); [print(f'Page {row[1]:2d}: {row[0]:15s} | {row[3]:12s} | {row[4]}') for row in records]; conn.close()"
+
+# Show parameter details for specific record
+python -c "import sqlite3; conn = sqlite3.connect('spacecraft.db'); cursor = conn.cursor(); cursor.execute('SELECT [Spacecraft Name], [Mission ID], [Launch Date], [Thermal Control], [Temperature Range], [Power Output] FROM Page_Data WHERE PageID = ?', ('CHAN-THM-005',)); row = cursor.fetchone(); print('=== CHANDRA Thermal System Details ==='); print(f'Spacecraft: {row[0]}'); print(f'Mission ID: {row[1]}'); print(f'Launch Date: {row[2]}'); print(f'Thermal Control: {row[3]}'); print(f'Temperature Range: {row[4]}'); print(f'Power Output: {row[5]}'); conn.close()"
+
+## === COMMAND SET 4: Quick Individual Parameter Updates ===
+
+# Update specific parameters for existing records
+python -c "import sqlite3; conn = sqlite3.connect('spacecraft.db'); cursor = conn.cursor(); cursor.execute('UPDATE Page_Data SET [Mission Objectives] = ?, [Scientific Instruments] = ? WHERE PageID = ?', ('Advanced X-ray astronomy and deep space observations', 'ACIS CCD Camera, HRC High Resolution Camera', 'CHAN-COM-002')); conn.commit(); conn.close(); print('✓ Updated communication system parameters')"
+
+## === TEACHER DEMONSTRATION SUMMARY ===
+echo "
+=== DEMONSTRATION COMPLETE ===
+Your CHANDRA spacecraft now has:
+- Page 2: Communication System Parameters
+- Page 3: Power System Specifications  
+- Page 4: Navigation System Data
+- Page 5: Thermal Control System (with detailed parameters)
+- Page 6: Propulsion System
+- Page 7: Data Processing Unit
+- Page 18: Original telecomm record
+
+Total CHANDRA records: 7 different subsystems with parameter values
+"
